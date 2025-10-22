@@ -1,0 +1,46 @@
+# Quiz Game - Requirements
+
+## System Requirements
+- Node.js >= 14.0.0
+- npm >= 6.0.0
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+
+## Dependencies
+
+### Server Dependencies
+- express: ^5.1.0
+- socket.io: ^4.8.1
+- cors: ^2.8.5
+- concurrently: ^8.2.2 (dev dependency)
+
+### Client Dependencies
+- react: ^19.2.0
+- react-dom: ^19.2.0
+- socket.io-client: ^4.8.1
+- react-scripts: 5.0.1
+
+## Development Requirements
+- Git
+- Code editor (VS Code recommended)
+- Terminal/Command Prompt
+
+## Optional Dependencies
+- nodemon (for development)
+- eslint (for code linting)
+- prettier (for code formatting)
+
+## Browser Support
+- Chrome 80+
+- Firefox 75+
+- Safari 13+
+- Edge 80+
+
+## Performance Requirements
+- RAM: 4GB minimum, 8GB recommended
+- CPU: Dual-core 2.0GHz minimum
+- Network: Stable internet connection for multiplayer
+
+## Security Requirements
+- HTTPS recommended for production
+- CORS properly configured
+- Input validation and sanitization
