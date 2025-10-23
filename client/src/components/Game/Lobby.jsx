@@ -4,27 +4,28 @@ import { socket } from '../../socket';
 
 const Lobby = () => {
   const { roomId, players, isHost, dispatch } = useGame();
-  const [username, setUsername] = useState('');
+  const [createUsername, setCreateUsername] = useState('');
+  const [joinUsername, setJoinUsername] = useState('');
   const [roomCode, setRoomCode] = useState('');
 
   const handleCreateRoom = () => {
-    if (!username.trim()) {
+    if (!createUsername.trim()) {
       dispatch({ type: 'SET_ERROR', payload: 'Vui lòng nhập tên' });
       return;
     }
     
     dispatch({ type: 'SET_LOADING', payload: true });
-    socket.emit('create_room', { username });
+    socket.emit('create_room', { username: createUsername });
   };
 
   const handleJoinRoom = () => {
-    if (!username.trim() || !roomCode.trim()) {
+    if (!joinUsername.trim() || !roomCode.trim()) {
       dispatch({ type: 'SET_ERROR', payload: 'Vui lòng nhập tên và mã phòng' });
       return;
     }
     
     dispatch({ type: 'SET_LOADING', payload: true });
-    socket.emit('join_room', { roomId: roomCode, username });
+    socket.emit('join_room', { roomId: roomCode, username: joinUsername });
   };
 
   const handleStartGame = () => {
@@ -78,14 +79,14 @@ const Lobby = () => {
               <input
                 type="text"
                 placeholder="Nhập tên của bạn"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={createUsername}
+                onChange={(e) => setCreateUsername(e.target.value)}
               />
             </div>
             <button 
               className="btn-primary"
               onClick={handleCreateRoom}
-              disabled={!username.trim()}
+              disabled={!createUsername.trim()}
             >
               Tạo phòng
             </button>
@@ -98,8 +99,8 @@ const Lobby = () => {
               <input
                 type="text"
                 placeholder="Nhập tên của bạn"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={joinUsername}
+                onChange={(e) => setJoinUsername(e.target.value)}
               />
             </div>
             <div className="form-group">
@@ -113,7 +114,7 @@ const Lobby = () => {
             <button 
               className="btn-secondary"
               onClick={handleJoinRoom}
-              disabled={!username.trim() || !roomCode.trim()}
+              disabled={!joinUsername.trim() || !roomCode.trim()}
             >
               Tham gia
             </button>
