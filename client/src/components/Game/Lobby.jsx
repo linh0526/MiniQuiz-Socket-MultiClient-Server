@@ -4,6 +4,7 @@ import { socket } from '../../socket';
 
 const Lobby = () => {
   const { roomId, players, isHost, dispatch } = useGame();
+  const [activeTab, setActiveTab] = useState('create');
   const [createUsername, setCreateUsername] = useState('');
   const [joinUsername, setJoinUsername] = useState('');
   const [roomCode, setRoomCode] = useState('');
@@ -71,54 +72,73 @@ const Lobby = () => {
           <p>Chọn cách tham gia</p>
         </div>
 
-        <div className="lobby-actions">
-          <div className="action-card">
-            <h3>🏠 Tạo phòng mới</h3>
-            <p>Tạo phòng và mời bạn bè tham gia</p>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Nhập tên của bạn"
-                value={createUsername}
-                onChange={(e) => setCreateUsername(e.target.value)}
-              />
-            </div>
-            <button 
-              className="btn-primary"
-              onClick={handleCreateRoom}
-              disabled={!createUsername.trim()}
-            >
-              Tạo phòng
-            </button>
-          </div>
+        <div className="tab-navigation">
+          <button 
+            className={`tab-button ${activeTab === 'create' ? 'active' : ''}`}
+            onClick={() => setActiveTab('create')}
+          >
+            🏠 Tạo phòng
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'join' ? 'active' : ''}`}
+            onClick={() => setActiveTab('join')}
+          >
+            🚪 Tham gia phòng
+          </button>
+        </div>
 
-          <div className="action-card">
-            <h3>🚪 Tham gia phòng</h3>
-            <p>Nhập mã phòng để tham gia</p>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Nhập tên của bạn"
-                value={joinUsername}
-                onChange={(e) => setJoinUsername(e.target.value)}
-              />
+        <div className="tab-content">
+          {activeTab === 'create' && (
+            <div className="create-room-section">
+              <h3>🏠 Tạo phòng mới</h3>
+              <p>Tạo phòng và mời bạn bè tham gia</p>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Nhập tên của bạn"
+                  value={createUsername}
+                  onChange={(e) => setCreateUsername(e.target.value)}
+                />
+              </div>
+              <button 
+                className="btn-primary btn-large"
+                onClick={handleCreateRoom}
+                disabled={!createUsername.trim()}
+              >
+                Tạo phòng
+              </button>
             </div>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Nhập mã phòng"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
-              />
+          )}
+
+          {activeTab === 'join' && (
+            <div className="join-room-section">
+              <h3>🚪 Tham gia phòng</h3>
+              <p>Nhập mã phòng để tham gia</p>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Nhập tên của bạn"
+                  value={joinUsername}
+                  onChange={(e) => setJoinUsername(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Nhập mã phòng"
+                  value={roomCode}
+                  onChange={(e) => setRoomCode(e.target.value)}
+                />
+              </div>
+              <button 
+                className="btn-secondary btn-large"
+                onClick={handleJoinRoom}
+                disabled={!joinUsername.trim() || !roomCode.trim()}
+              >
+                Tham gia
+              </button>
             </div>
-            <button 
-              className="btn-secondary"
-              onClick={handleJoinRoom}
-              disabled={!joinUsername.trim() || !roomCode.trim()}
-            >
-              Tham gia
-            </button>
-          </div>
+          )}
         </div>
       </div>
     );
