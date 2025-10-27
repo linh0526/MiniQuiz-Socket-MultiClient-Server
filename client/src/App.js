@@ -1,15 +1,22 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GameProvider } from './contexts/GameContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import Header from './components/Common/Header';
+import HomePage from './components/Home/HomePage';
 import Lobby from './components/Game/Lobby';
 import GamePlay from './components/Game/GamePlay';
 import GameResults from './components/Game/GameResults';
+import AdminPanel from './components/Admin/AdminPanel';
 import { useGame } from './contexts/GameContext';
-import './App.css';
+import './UI/App.css';
+import './UI/Admin.css';
+import './UI/HomePage.css';
+import './UI/dark.css';
 
-function AppContent() {
-  const { gameState, loading, error, dispatch } = useGame();
+function GameApp() {
+  const { roomId, gameState, loading, error, dispatch } = useGame();
 
   if (loading) {
     return (
@@ -40,9 +47,10 @@ function AppContent() {
       <Header />
       
       <main className="app-main">
-        {gameState === 'lobby' && <Lobby />}
-        {gameState === 'playing' && <GamePlay />}
-        {gameState === 'results' && <GameResults />}
+        {!roomId && <HomePage />}
+        {roomId && gameState === 'lobby' && <Lobby />}
+        {roomId && gameState === 'playing' && <GamePlay />}
+        {roomId && gameState === 'results' && <GameResults />}
       </main>
     </div>
   );
@@ -51,9 +59,23 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <GameProvider>
-        <AppContent />
-      </GameProvider>
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/admin" element={
+              <GameProvider>
+                <AdminPanel />
+              </GameProvider>
+            } />
+            <Route path="" element={
+              <GameProvider>
+                <GameApp />
+              </GameProvider>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

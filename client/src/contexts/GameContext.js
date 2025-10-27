@@ -8,6 +8,7 @@ const initialState = {
   isHost: false,
   gameState: 'lobby', // lobby, playing, results
   players: [],
+  questions: [], // Danh sách câu hỏi từ AdminPanel
   currentQuestion: null,
   questionIndex: 0,
   totalQuestions: 0,
@@ -80,13 +81,19 @@ const gameReducer = (state, action) => {
         leaderboard: action.payload
       };
     
-    case 'GAME_ENDED':
-      return {
-        ...state,
-        gameState: 'results',
-        leaderboard: action.payload.leaderboard,
-        gameStats: action.payload.gameStats
-      };
+        case 'GAME_ENDED':
+          return {
+            ...state,
+            gameState: 'results',
+            leaderboard: action.payload.leaderboard,
+            gameStats: action.payload.gameStats
+          };
+
+        case 'LEFT_ROOM':
+          return {
+            ...initialState,
+            questions: [] // Reset questions khi rời phòng
+          };
     
     case 'HOST_CHANGED':
       return {
@@ -100,11 +107,36 @@ const gameReducer = (state, action) => {
         timeLeft: Math.max(0, state.timeLeft - 1)
       };
     
+    case 'SET_QUESTIONS':
+      return {
+        ...state,
+        questions: action.payload
+      };
+    
+    case 'ADD_QUESTION':
+      return {
+        ...state,
+        questions: [...state.questions, action.payload]
+      };
+    
+    case 'REMOVE_QUESTION':
+      return {
+        ...state,
+        questions: state.questions.filter((_, index) => index !== action.payload)
+      };
+    
+    case 'CLEAR_QUESTIONS':
+      return {
+        ...state,
+        questions: []
+      };
+    
     case 'RESET_GAME':
       return {
         ...initialState,
         roomId: state.roomId,
-        isHost: state.isHost
+        isHost: state.isHost,
+        questions: state.questions // Giữ lại questions khi reset game
       };
     
     default:
@@ -151,6 +183,10 @@ export const GameProvider = ({ children }) => {
 
     socket.on('game_ended', (data) => {
       dispatch({ type: 'GAME_ENDED', payload: data });
+    });
+
+    socket.on('left_room', () => {
+      dispatch({ type: 'LEFT_ROOM' });
     });
 
     socket.on('host_changed', (data) => {

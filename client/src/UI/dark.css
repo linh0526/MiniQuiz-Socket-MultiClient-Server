@@ -1,0 +1,84 @@
+/* Dark Theme Styles */
+.dark-theme {
+    background: #1a1a1a !important;
+    color: #e0e0e0 !important;
+  }
+  
+  .dark-theme .app-header {
+    background: #2d2d2d !important;
+    border-color: #444 !important;
+    box-shadow: 8px 8px 0px #444 !important;
+  }
+  
+  .dark-theme .header-left h1 {
+    color: #e0e0e0 !important;
+    text-shadow: 2px 2px 0px #FF69B4 !important;
+  }
+  
+  .dark-theme .nav-link {
+    background: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+    box-shadow: 4px 4px 0px #444 !important;
+  }
+  
+  .dark-theme .nav-link:hover {
+    background: #FF69B4 !important;
+    color: #FFF !important;
+  }
+  
+  .dark-theme .nav-link.active {
+    background: #FF69B4 !important;
+    color: #FFF !important;
+  }
+  
+  .dark-theme .btn-primary {
+    background: #FF69B4 !important;
+    color: #FFF !important;
+    border-color: #444 !important;
+    box-shadow: 6px 6px 0px #444 !important;
+  }
+  
+  .dark-theme .btn-secondary {
+    background: #444 !important;
+    color: #e0e0e0 !important;
+    border-color: #666 !important;
+    box-shadow: 6px 6px 0px #666 !important;
+  }
+  
+  .dark-theme .btn-danger {
+    background: #e74c3c !important;
+    color: #FFF !important;
+    border-color: #444 !important;
+    box-shadow: 6px 6px 0px #444 !important;
+  }
+  
+  .dark-theme .form-group input,
+  .dark-theme .form-group textarea {
+    background: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+    box-shadow: 4px 4px 0px #444 !important;
+  }
+  
+  .dark-theme .form-group input:focus,
+  .dark-theme .form-group textarea:focus {
+    background: #FF69B4 !important;
+    color: #FFF !important;
+  }
+  
+  .dark-theme .form-group label {
+    color: #e0e0e0 !important;
+  }
+  
+  .dark-theme .theme-toggle-btn {
+    background: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+    box-shadow: 4px 4px 0px #444 !important;
+  }
+  
+  .dark-theme .theme-toggle-btn:hover {
+    background: #FF69B4 !important;
+    color: #FFF !important;
+  }

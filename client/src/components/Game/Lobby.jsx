@@ -3,7 +3,7 @@ import { useGame } from '../../contexts/GameContext';
 import { socket } from '../../socket';
 
 const Lobby = () => {
-  const { roomId, players, isHost, dispatch } = useGame();
+  const { roomId, players, isHost, dispatch, questions } = useGame();
   const [activeTab, setActiveTab] = useState('create');
   const [createUsername, setCreateUsername] = useState('');
   const [joinUsername, setJoinUsername] = useState('');
@@ -30,38 +30,12 @@ const Lobby = () => {
   };
 
   const handleStartGame = () => {
-    // Sample questions - trong thực tế sẽ lấy từ API hoặc database
-    const sampleQuestions = [
-      {
-        text: "React là gì?",
-        answers: [
-          { text: "Một thư viện JavaScript", correct: true },
-          { text: "Một framework JavaScript", correct: false },
-          { text: "Một ngôn ngữ lập trình", correct: false },
-          { text: "Một database", correct: false }
-        ]
-      },
-      {
-        text: "Node.js chạy trên môi trường nào?",
-        answers: [
-          { text: "Browser", correct: false },
-          { text: "Server", correct: true },
-          { text: "Mobile", correct: false },
-          { text: "Desktop", correct: false }
-        ]
-      },
-      {
-        text: "Socket.io dùng để làm gì?",
-        answers: [
-          { text: "Real-time communication", correct: true },
-          { text: "Database management", correct: false },
-          { text: "File storage", correct: false },
-          { text: "Authentication", correct: false }
-        ]
-      }
-    ];
+    if (questions.length === 0) {
+      dispatch({ type: 'SET_ERROR', payload: 'Vui lòng tạo câu hỏi trong Admin Panel trước khi bắt đầu game' });
+      return;
+    }
 
-    socket.emit('start_game', { roomId, questions: sampleQuestions });
+    socket.emit('start_game', { roomId, questions });
   };
 
   if (!roomId) {
@@ -77,20 +51,20 @@ const Lobby = () => {
             className={`tab-button ${activeTab === 'create' ? 'active' : ''}`}
             onClick={() => setActiveTab('create')}
           >
-            🏠 Tạo phòng
+            Tạo phòng
           </button>
           <button 
             className={`tab-button ${activeTab === 'join' ? 'active' : ''}`}
             onClick={() => setActiveTab('join')}
           >
-            🚪 Tham gia phòng
+            Tham gia phòng
           </button>
         </div>
 
         <div className="tab-content">
           {activeTab === 'create' && (
             <div className="create-room-section">
-              <h3>🏠 Tạo phòng mới</h3>
+              <h3>Tạo phòng mới</h3>
               <p>Tạo phòng và mời bạn bè tham gia</p>
               <div className="form-group">
                 <input
@@ -112,7 +86,7 @@ const Lobby = () => {
 
           {activeTab === 'join' && (
             <div className="join-room-section">
-              <h3>🚪 Tham gia phòng</h3>
+              <h3>Tham gia phòng</h3>
               <p>Nhập mã phòng để tham gia</p>
               <div className="form-group">
                 <input
@@ -172,16 +146,32 @@ const Lobby = () => {
 
       {isHost && (
         <div className="host-controls">
+          
           <button 
             className="btn-primary btn-large"
             onClick={handleStartGame}
-            disabled={players.length < 2}
+            disabled={players.length < 2 || questions.length === 0}
           >
             Bắt đầu game ({players.length}/2+)
           </button>
-          <p className="start-hint">
-            Cần ít nhất 2 người chơi để bắt đầu
-          </p>
+          
+          <div className="start-hints">
+            {players.length < 2 && (
+              <p className="start-hint warning">
+                ⚠️ Cần ít nhất 2 người chơi để bắt đầu
+              </p>
+            )}
+            {questions.length === 0 && (
+              <p className="start-hint warning">
+                ⚠️ Vui lòng tạo câu hỏi trong Admin Panel
+              </p>
+            )}
+            {players.length >= 2 && questions.length > 0 && (
+              <p className="start-hint success">
+                ✅ Sẵn sàng bắt đầu game!
+              </p>
+            )}
+          </div>
         </div>
       )}
 

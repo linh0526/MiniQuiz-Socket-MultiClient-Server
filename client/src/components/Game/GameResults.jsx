@@ -10,8 +10,10 @@ const GameResults = () => {
   };
 
   const handleLeaveRoom = () => {
-    socket.emit('leave_room', { roomId });
-    window.location.reload();
+    if (window.confirm('Bạn có chắc muốn rời phòng?')) {
+      socket.emit('leave_room', { roomId });
+      // Context sẽ tự động reset state khi nhận được 'left_room' event
+    }
   };
 
   const getRankEmoji = (rank) => {
