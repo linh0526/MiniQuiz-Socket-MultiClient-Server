@@ -13,11 +13,22 @@ class GameController {
       // Tạo phòng mới
       socket.on('create_room', (data) => {
         try {
+          const { username } = data;
           const game = GameService.createGame(socket.id);
+          // Thêm host vào danh sách players
+          if (username) {
+            game.addPlayer(socket.id, username);
+          }
           socket.join(game.roomId);
           socket.emit('room_created', {
             roomId: game.roomId,
             hostId: socket.id
+          });
+          // Gửi danh sách players cho host
+          socket.emit('player_joined', {
+            playerId: socket.id,
+            username: username || 'Host',
+            players: game.getAllPlayers()
           });
           console.log(`Room created: ${game.roomId} by ${socket.id}`);
         } catch (error) {
@@ -46,8 +57,15 @@ class GameController {
             socket.join(roomId);
             socket.emit('joined_room', { roomId, username });
             
-            // Thông báo cho tất cả người chơi trong phòng
-            this.io.to(roomId).emit('player_joined', {
+            // Gửi danh sách players hiện tại cho người chơi mới
+            socket.emit('player_joined', {
+              playerId: socket.id,
+              username,
+              players: game.getAllPlayers()
+            });
+            
+            // Thông báo cho tất cả người chơi khác trong phòng
+            socket.to(roomId).emit('player_joined', {
               playerId: socket.id,
               username,
               players: game.getAllPlayers()
@@ -68,23 +86,37 @@ class GameController {
           
           if (game) {
             const player = game.getPlayer(socket.id);
+            const username = player?.username;
+            
+            // Xóa người chơi khỏi phòng
             GameService.leaveGame(roomId, socket.id);
             socket.leave(roomId);
             
-            // Thông báo cho các người chơi khác
+            // Thông báo cho client rằng họ đã rời phòng
+            socket.emit('left_room');
+            
+            // Lấy danh sách players sau khi đã remove
+            const updatedPlayers = game.getAllPlayers();
+            
+            // Thông báo cho các người chơi khác trong phòng
             this.io.to(roomId).emit('player_left', {
               playerId: socket.id,
-              username: player?.username,
-              players: game.getAllPlayers()
+              username: username,
+              players: updatedPlayers
             });
 
             // Xóa phòng nếu không còn ai
             if (game.players.size === 0) {
               GameService.deleteGame(roomId);
             }
+          } else {
+            // Nếu không tìm thấy phòng, vẫn emit left_room để client reset state
+            socket.emit('left_room');
           }
         } catch (error) {
           console.error('Error leaving room:', error);
+          // Vẫn emit left_room để client reset state
+          socket.emit('left_room');
         }
       });
 
@@ -122,7 +154,7 @@ class GameController {
       // Trả lời câu hỏi
       socket.on('submit_answer', (data) => {
         try {
-          const { roomId, questionIndex, answer, timeSpent } = data;
+          const { roomId, questionIndex, answer, questionType, timeSpent } = data;
           const game = GameService.getGame(roomId);
           
           if (!game || game.gameState !== 'playing') return;
@@ -130,8 +162,46 @@ class GameController {
           const question = game.questions[questionIndex];
           if (!question) return;
 
-          const isCorrect = question.answers[answer]?.correct || false;
-          const points = isCorrect ? 10 : 0;
+          const type = questionType || question.type || 'single';
+          let isCorrect = false;
+          let points = 0;
+
+          // Chấm điểm theo từng loại câu hỏi
+          if (type === 'single') {
+            // Câu hỏi một đáp án đúng
+            isCorrect = question.answers[answer]?.correct || false;
+            points = isCorrect ? 10 : 0;
+          } else if (type === 'multiple') {
+            // Câu hỏi nhiều đáp án đúng
+            const correctAnswers = question.answers
+              .map((a, idx) => a.correct ? idx : -1)
+              .filter(idx => idx !== -1)
+              .sort((a, b) => a - b);
+            const userAnswers = Array.isArray(answer) ? answer.sort((a, b) => a - b) : [];
+            
+            // So sánh mảng
+            isCorrect = correctAnswers.length === userAnswers.length &&
+              correctAnswers.every((val, idx) => val === userAnswers[idx]);
+            points = isCorrect ? 10 : 0;
+          } else if (type === 'order') {
+            // Câu hỏi sắp xếp
+            const correctOrder = question.correctOrder || 
+              question.answers
+                .map((a, idx) => idx)
+                .filter(idx => question.answers[idx].text.trim());
+            const userOrder = Array.isArray(answer) ? answer : [];
+            
+            // So sánh thứ tự
+            isCorrect = correctOrder.length === userOrder.length &&
+              correctOrder.every((val, idx) => val === userOrder[idx]);
+            points = isCorrect ? 10 : 0;
+          } else if (type === 'fill') {
+            // Câu hỏi điền từ
+            const correctText = (question.correctText || '').trim().toLowerCase();
+            const userText = (answer || '').trim().toLowerCase();
+            isCorrect = correctText === userText;
+            points = isCorrect ? 10 : 0;
+          }
 
           game.updatePlayerScore(socket.id, points);
           game.addAnswer(socket.id, questionIndex, answer, isCorrect, timeSpent);
@@ -208,12 +278,19 @@ class GameController {
         GameService.games.forEach((game, roomId) => {
           if (game.players.has(socket.id)) {
             const player = game.getPlayer(socket.id);
+            const username = player?.username;
+            
+            // Xóa người chơi khỏi phòng
             GameService.leaveGame(roomId, socket.id);
             
+            // Lấy danh sách players sau khi đã remove
+            const updatedPlayers = game.getAllPlayers();
+            
+            // Thông báo cho các người chơi khác trong phòng
             this.io.to(roomId).emit('player_left', {
               playerId: socket.id,
-              username: player?.username,
-              players: game.getAllPlayers()
+              username: username,
+              players: updatedPlayers
             });
 
             // Nếu là host rời khỏi, chuyển quyền host cho người khác

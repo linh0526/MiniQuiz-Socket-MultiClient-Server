@@ -99,9 +99,14 @@ const Lobby = () => {
               <div className="form-group">
                 <input
                   type="text"
-                  placeholder="Nhập mã phòng"
+                  placeholder="Nhập mã phòng (6 số)"
                   value={roomCode}
-                  onChange={(e) => setRoomCode(e.target.value)}
+                  onChange={(e) => {
+                    // Chỉ cho phép nhập số và tối đa 6 ký tự
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setRoomCode(value);
+                  }}
+                  maxLength={6}
                 />
               </div>
               <button 
@@ -118,11 +123,39 @@ const Lobby = () => {
     );
   }
 
+  const handleCopyRoomCode = () => {
+    navigator.clipboard.writeText(roomId).then(() => {
+      alert('Đã copy mã phòng: ' + roomId);
+    }).catch(() => {
+      // Fallback cho trình duyệt không hỗ trợ clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = roomId;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Đã copy mã phòng: ' + roomId);
+    });
+  };
+
   return (
     <div className="lobby-container">
       <div className="lobby-header">
         <h2>Phòng: {roomId}</h2>
         <p>Đang chờ người chơi...</p>
+        <div className="room-code-section">
+          <div className="room-code-display">
+            <span className="room-code-label">Mã phòng:</span>
+            <span className="room-code-value">{roomId}</span>
+          </div>
+          <button 
+            className="btn-secondary btn-copy"
+            onClick={handleCopyRoomCode}
+            title="Copy mã phòng"
+          >
+            📋 Copy mã phòng
+          </button>
+        </div>
       </div>
 
       <div className="players-list">

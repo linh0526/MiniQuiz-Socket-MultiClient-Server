@@ -127,9 +127,13 @@ const HomePage = () => {
                     <input
                       type="text"
                       value={roomCode}
-                      onChange={(e) => setRoomCode(e.target.value)}
-                      placeholder="Nhập mã phòng..."
-                      maxLength={100}
+                      onChange={(e) => {
+                        // Chỉ cho phép nhập số và tối đa 6 ký tự
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setRoomCode(value);
+                      }}
+                      placeholder="Nhập mã phòng (6 số)..."
+                      maxLength={6}
                     />
                   </div>
                   

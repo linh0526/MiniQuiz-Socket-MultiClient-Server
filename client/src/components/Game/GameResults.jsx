@@ -1,18 +1,28 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext';
 import { socket } from '../../socket';
 
 const GameResults = () => {
-  const { leaderboard, gameStats, isHost, roomId } = useGame();
+  const { leaderboard, gameStats, isHost, roomId, dispatch } = useGame();
+  const navigate = useNavigate();
 
   const handlePlayAgain = () => {
     socket.emit('reset_game', { roomId });
   };
 
+  const handleGoBackToRoom = () => {
+    // Quay lại phòng (lobby) thay vì rời phòng
+    dispatch({ type: 'GO_BACK_TO_LOBBY' });
+  };
+
   const handleLeaveRoom = () => {
     if (window.confirm('Bạn có chắc muốn rời phòng?')) {
       socket.emit('leave_room', { roomId });
-      // Context sẽ tự động reset state khi nhận được 'left_room' event
+      // Reset state ngay lập tức
+      dispatch({ type: 'LEFT_ROOM' });
+      // Navigate về trang chủ
+      navigate('/');
     }
   };
 
@@ -102,10 +112,17 @@ const GameResults = () => {
         )}
         
         <button 
+          className="btn-primary btn-large"
+          onClick={handleGoBackToRoom}
+        >
+          🔙 Quay lại phòng
+        </button>
+        
+        <button 
           className="btn-secondary btn-large"
           onClick={handleLeaveRoom}
         >
-          Rời phòng
+          Rời phòng hoàn toàn
         </button>
       </div>
 

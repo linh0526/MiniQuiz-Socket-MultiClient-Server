@@ -139,6 +139,16 @@ const gameReducer = (state, action) => {
         questions: state.questions // Giữ lại questions khi reset game
       };
     
+    case 'GO_BACK_TO_LOBBY':
+      return {
+        ...state,
+        gameState: 'lobby',
+        currentQuestion: null,
+        questionIndex: 0,
+        totalQuestions: 0,
+        timeLeft: 0
+      };
+    
     default:
       return state;
   }
