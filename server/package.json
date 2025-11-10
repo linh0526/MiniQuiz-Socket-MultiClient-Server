@@ -78,7 +78,8 @@
     "unpipe": "^1.0.0",
     "vary": "^1.1.2",
     "wrappy": "^1.0.2",
-    "ws": "^8.17.1"
+    "ws": "^8.17.1",
+    "xhttp": "^0.15.3"
   },
   "scripts": {
     "start": "node index.js",
