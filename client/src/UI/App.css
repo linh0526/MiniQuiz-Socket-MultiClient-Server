@@ -244,6 +244,14 @@ body {
   box-shadow: 6px 6px 0px #000;
 }
 
+.input-error-text {
+  display: block;
+  margin-top: 0.5rem;
+  color: #FF0000;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
 .lobby-container {
   flex: 1;
   padding: 2rem;

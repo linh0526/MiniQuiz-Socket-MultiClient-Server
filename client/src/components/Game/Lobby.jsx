@@ -5,8 +5,16 @@ import { socket } from '../../socket';
 const Lobby = () => {
   const { roomId, players, isHost, dispatch, questions } = useGame();
   const [activeTab, setActiveTab] = useState('create');
-  const [createUsername, setCreateUsername] = useState('');
-  const [joinUsername, setJoinUsername] = useState('');
+  const getStoredUsername = () => {
+    if (typeof window === 'undefined') return '';
+    try {
+      return localStorage.getItem('quizUsername') || '';
+    } catch {
+      return '';
+    }
+  };
+  const [createUsername, setCreateUsername] = useState(() => getStoredUsername());
+  const [joinUsername, setJoinUsername] = useState(() => getStoredUsername());
   const [roomCode, setRoomCode] = useState('');
 
   const handleCreateRoom = () => {
@@ -15,6 +23,12 @@ const Lobby = () => {
       return;
     }
     
+    try {
+      localStorage.setItem('quizUsername', createUsername.trim());
+    } catch {
+      // ignore
+    }
+
     dispatch({ type: 'SET_LOADING', payload: true });
     socket.emit('create_room', { username: createUsername });
   };
@@ -25,6 +39,12 @@ const Lobby = () => {
       return;
     }
     
+    try {
+      localStorage.setItem('quizUsername', joinUsername.trim());
+    } catch {
+      // ignore
+    }
+
     dispatch({ type: 'SET_LOADING', payload: true });
     socket.emit('join_room', { roomId: roomCode, username: joinUsername });
   };
@@ -138,6 +158,57 @@ const Lobby = () => {
     });
   };
 
+  const buildInviteLink = () => {
+    if (typeof window === 'undefined') return '';
+    const publicUrl = process.env.PUBLIC_URL && process.env.PUBLIC_URL !== '.' ? process.env.PUBLIC_URL : '';
+    if (publicUrl && publicUrl.startsWith('http')) {
+      return `${publicUrl.replace(/\/$/, '')}/join/${roomId}`;
+    }
+    const normalizedPath = publicUrl
+      ? `/${publicUrl.replace(/^\/|\/$/g, '')}`
+      : '';
+    const base = `${window.location.origin}${normalizedPath}`;
+    return `${base.replace(/\/$/, '')}/join/${roomId}`;
+  };
+
+  const handleShareInviteLink = async () => {
+    if (!roomId) return;
+    const inviteLink = buildInviteLink();
+    const shareMessage = `Tham gia phòng Quiz Game với mã ${roomId}`;
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({
+          title: 'Quiz Game',
+          text: shareMessage,
+          url: inviteLink
+        });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        return;
+      }
+    }
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(inviteLink);
+        alert('Đã copy link mời: ' + inviteLink);
+        return;
+      }
+    } catch {
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = inviteLink;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    alert('Đã copy link mời: ' + inviteLink);
+  };
+
   return (
     <div className="lobby-container">
       <div className="lobby-header">
@@ -154,6 +225,13 @@ const Lobby = () => {
             title="Copy mã phòng"
           >
             📋 Copy mã phòng
+          </button>
+          <button
+            className="btn-secondary btn-copy"
+            onClick={handleShareInviteLink}
+            title="Copy link mời"
+          >
+            🔗 Copy link mời
           </button>
         </div>
       </div>

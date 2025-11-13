@@ -5,8 +5,16 @@ import { socket } from '../../socket';
 const HomePage = () => {
   const { roomId, players, isHost, dispatch } = useGame();
   const [activeTab, setActiveTab] = useState('create');
-  const [createUsername, setCreateUsername] = useState('');
-  const [joinUsername, setJoinUsername] = useState('');
+  const getStoredUsername = () => {
+    if (typeof window === 'undefined') return '';
+    try {
+      return localStorage.getItem('quizUsername') || '';
+    } catch {
+      return '';
+    }
+  };
+  const [createUsername, setCreateUsername] = useState(() => getStoredUsername());
+  const [joinUsername, setJoinUsername] = useState(() => getStoredUsername());
   const [roomCode, setRoomCode] = useState('');
 
   // No need to redirect - GameApp will handle the display logic
@@ -15,6 +23,12 @@ const HomePage = () => {
     if (!createUsername.trim()) {
       dispatch({ type: 'SET_ERROR', payload: 'Vui lòng nhập tên' });
       return;
+    }
+
+    try {
+      localStorage.setItem('quizUsername', createUsername.trim());
+    } catch {
+      // ignore
     }
 
     dispatch({ type: 'SET_LOADING', payload: true });
@@ -27,6 +41,12 @@ const HomePage = () => {
       return;
     }
     
+    try {
+      localStorage.setItem('quizUsername', joinUsername.trim());
+    } catch {
+      // ignore
+    }
+
     dispatch({ type: 'SET_LOADING', payload: true });
     socket.emit('join_room', { roomId: roomCode, username: joinUsername });
   };
